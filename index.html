@@ -228,7 +228,7 @@
 
     <header>
         <h1>Experiment 3: Thermodynamic Processes</h1>
-        <div class="meta">PHYS 43 Lab 3</div>
+        <div class="meta">PHYS 43 Lab</div>
         <div style="margin-top: 1rem;">
              <button id="btn-export" class="btn btn-outline">Save/Export Data</button>
              <label class="btn btn-outline">
@@ -263,7 +263,7 @@
                                 <thead>
                                     <tr>
                                         <th>Temp (°C)</th>
-                                        <th>Volume (mm/units)</th>
+                                        <th>Height/Vol (mm)</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -304,12 +304,12 @@
         <section id="part2">
             <div class="section-header">
                 <h2>2. Boyle's Law (Isothermal)</h2>
-                <span class="badge badge-good">P ∝ 1/V</span>
+                <span class="badge badge-good">P ∝ 1/h</span>
             </div>
             <div class="card-body">
                 <div class="formula-card">
-                    <div class="math-display">P = b(1/V) + C</div>
-                    <span class="var-def">Plotting P vs 1/V should yield a straight line.</span>
+                    <div class="math-display">P = b(1/h) + C</div>
+                    <span class="var-def">Plotting P (mmHg) vs 1/Height (mm⁻¹) should yield a straight line.</span>
                 </div>
 
                 <div class="data-grid">
@@ -322,9 +322,9 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Pressure (kPa)</th>
-                                        <th>Volume (mm)</th>
-                                        <th>1/V (Calcd)</th>
+                                        <th>Pressure (mmHg)</th>
+                                        <th>Height (mm)</th>
+                                        <th>1/h (mm⁻¹)</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -365,7 +365,7 @@
             </div>
             <div class="card-body">
                 <div class="formula-card">
-                    <div class="math-display">W = ∮ P dV ≈ Area enclosed</div>
+                    <div class="math-display">W = ∮ P dh ≈ Area enclosed</div>
                     <span class="var-def">Cycle: Isobaric → Isochoric → Isothermal (or similar)</span>
                 </div>
 
@@ -381,8 +381,8 @@
                                 <thead>
                                     <tr>
                                         <th>Label</th>
-                                        <th>P (kPa)</th>
-                                        <th>V (mm)</th>
+                                        <th>P (mmHg)</th>
+                                        <th>Height (mm)</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -421,10 +421,12 @@
         /* --- STATE MANAGEMENT --- */
         let charts = { c1: null, c2: null, c3: null };
 
-        // Default initial rows for convenience
+        // Default initial rows (mmHg and Height)
         const defaults = {
-            t1: [ {x:80,y:''}, {x:75,y:''}, {x:70,y:''}, {x:65,y:''}, {x:60,y:''}, {x:55,y:''}, {x:50,y:''}, {x:45,y:''}, {x:40,y:''}, {x:35,y:''}, {x:30,y:''}, {x:25,y:''}, {x:20,y:''}, {x:15,y:''} ],
-            t2: [ {p:101.3, v:''}, {p:'', v:''}, {p:'', v:''} ],
+            t1: [ {x:80, y:''}, {x:75, y:''}, {x:70, y:''}, {x:65, y:''}, {x:60, y:''} ],
+            // Boyle's Law defaults: P ~ 760mmHg (1 atm)
+            t2: [ {p:760, v:''}, {p:'', v:''}, {p:'', v:''} ],
+            // Cycle defaults
             t3: [ {l:'A', p:'', v:''}, {l:'B', p:'', v:''}, {l:'C', p:'', v:''} ]
         };
 
@@ -498,18 +500,19 @@
             
             if (tableId === 't1_body') {
                 const td1 = tr.insertCell(); td1.appendChild(createInput(data.x ?? '', 'number', 'Temp'));
-                const td2 = tr.insertCell(); td2.appendChild(createInput(data.y ?? '', 'number', 'Vol'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.y ?? '', 'number', 'Height'));
                 const td3 = tr.insertCell(); td3.appendChild(createDelBtn(tr));
             } else if (tableId === 't2_body') {
-                const td1 = tr.insertCell(); td1.appendChild(createInput(data.p ?? '', 'number', 'P'));
-                const td2 = tr.insertCell(); td2.appendChild(createInput(data.v ?? '', 'number', 'V'));
-                const td3 = tr.insertCell(); td3.innerText = '--'; // Calculated 1/V
+                // Boyle's Law: Pressure (mmHg) and Height (mm)
+                const td1 = tr.insertCell(); td1.appendChild(createInput(data.p ?? '', 'number', 'mmHg'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.v ?? '', 'number', 'mm'));
+                const td3 = tr.insertCell(); td3.innerText = '--'; // Calculated 1/h
                 td3.className = 'calc-cell';
                 const td4 = tr.insertCell(); td4.appendChild(createDelBtn(tr));
             } else if (tableId === 't3_body') {
                 const td1 = tr.insertCell(); td1.appendChild(createInput(data.l ?? '', 'text', 'Label'));
-                const td2 = tr.insertCell(); td2.appendChild(createInput(data.p ?? '', 'number', 'P'));
-                const td3 = tr.insertCell(); td3.appendChild(createInput(data.v ?? '', 'number', 'V'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.p ?? '', 'number', 'mmHg'));
+                const td3 = tr.insertCell(); td3.appendChild(createInput(data.v ?? '', 'number', 'mm'));
                 const td4 = tr.insertCell(); td4.appendChild(createDelBtn(tr));
             }
             tbody.appendChild(tr);
@@ -530,13 +533,13 @@
                     const y = parseFloat(inputs[1].value);
                     if (!isNaN(x) && !isNaN(y)) data.push({x, y});
                 } else if (tableId === 't2_body') {
-                    const p = parseFloat(inputs[0].value);
-                    const v = parseFloat(inputs[1].value);
-                    // Update the 1/V cell visually
+                    const p = parseFloat(inputs[0].value); // Pressure (mmHg)
+                    const v = parseFloat(inputs[1].value); // Height (mm)
+                    // Update the 1/h cell visually
                     const invCell = row.querySelector('.calc-cell');
                     if (!isNaN(v) && v !== 0) {
                         invCell.innerText = (1/v).toFixed(4);
-                        if(!isNaN(p)) data.push({x: 1/v, y: p, rawV: v}); // x is 1/V, y is P
+                        if(!isNaN(p)) data.push({x: 1/v, y: p, rawV: v}); // x is 1/h, y is P
                     } else {
                         invCell.innerText = '--';
                     }
@@ -544,7 +547,7 @@
                     const l = inputs[0].value;
                     const p = parseFloat(inputs[1].value);
                     const v = parseFloat(inputs[2].value);
-                    if (!isNaN(p) && !isNaN(v)) data.push({label: l, x: v, y: p}); // x=V, y=P
+                    if (!isNaN(p) && !isNaN(v)) data.push({label: l, x: v, y: p}); // x=h, y=P
                 }
             });
             return data;
@@ -614,7 +617,7 @@
                 // Reset Output
                 elSlope.innerText = '--'; elInt.innerText = '--'; elZero.innerText = '--';
                 elErr.innerText = '--'; elErr.className = '';
-                updateChart('c1', 'chart1', 'scatter', [], [], 'Temperature (°C)', 'Volume');
+                updateChart('c1', 'chart1', 'scatter', [], [], 'Temperature (°C)', 'Height (mm)');
                 return;
             }
 
@@ -636,10 +639,9 @@
                 elErr.innerText = diff.toFixed(2) + "%";
                 elErr.className = diff < 5 ? "badge badge-good" : (diff < 15 ? "badge badge-warn" : "badge badge-bad");
 
-                elExplain.innerHTML = `Model: V = ${fit.slope.toFixed(3)}T + ${fit.intercept.toFixed(2)}.<br> Solving for V=0 gives T = -${fit.intercept.toFixed(2)} / ${fit.slope.toFixed(3)}`;
+                elExplain.innerHTML = `Model: h = ${fit.slope.toFixed(3)}T + ${fit.intercept.toFixed(2)}.<br> Solving for h=0 gives T = -${fit.intercept.toFixed(2)} / ${fit.slope.toFixed(3)}`;
 
                 // Generate regression line points for graph
-                // Extrapolate down to abs zero for visual
                 const minX = Math.min(...x, absZero); 
                 const maxX = Math.max(...x);
                 const regData = [
@@ -650,16 +652,16 @@
                 updateChart('c1', 'chart1', 'scatter', [
                     { label: 'Data', data: data, backgroundColor: '#2e7d32' },
                     { label: 'Fit', data: regData, type: 'line', borderColor: '#ffa000', borderDash: [5,5], pointRadius: 0 }
-                ], x, 'Temperature (°C)', 'Volume');
+                ], x, 'Temperature (°C)', 'Height (mm)');
             }
         }
 
         function calcPart2() {
-            const data = getData('t2_body'); // x = 1/V, y = P
+            const data = getData('t2_body'); // x = 1/h, y = P
             
             if (data.length < 2) {
                 document.getElementById('p2_r2').innerText = '--';
-                updateChart('c2', 'chart2', 'scatter', [], [], '1 / Volume (1/mm)', 'Pressure (kPa)');
+                updateChart('c2', 'chart2', 'scatter', [], [], '1 / Height (mm⁻¹)', 'Pressure (mmHg)');
                 return;
             }
 
@@ -680,16 +682,16 @@
                 updateChart('c2', 'chart2', 'scatter', [
                     { label: 'Data', data: data, backgroundColor: '#2e7d32' },
                     { label: 'Linear Fit', data: regData, type: 'line', borderColor: '#ffa000', pointRadius: 0 }
-                ], x, '1 / Volume', 'Pressure');
+                ], x, '1 / Height (mm⁻¹)', 'Pressure (mmHg)');
             }
         }
 
         function calcPart3() {
-            const data = getData('t3_body'); // x=V, y=P
+            const data = getData('t3_body'); // x=h, y=P
             
             if (data.length < 3) {
                 document.getElementById('p3_work').innerText = '--';
-                updateChart('c3', 'chart3', 'scatter', [], [], 'Volume', 'Pressure');
+                updateChart('c3', 'chart3', 'scatter', [], [], 'Height (mm)', 'Pressure (mmHg)');
                 return;
             }
 
@@ -698,13 +700,8 @@
             
             // Area Calculation
             const work = polygonArea(V, P);
-            // Units depend on input. If kPa and mm? 
-            // 1 kPa * 1 mm = 1000 Pa * 0.001 m = 1 N/m^2 * m = 1 J/m^2 ... wait.
-            // Usually mm is height of cylinder. Convert to Volume?
-            // Assuming inputs are raw units. We will just output "unit-Joules" (area units).
-            // Usually we'd multiply by Area_piston. Let's assume input V is actual Volume or proportional.
-            // Displaying raw area value:
-            document.getElementById('p3_work').innerText = Math.abs(work).toFixed(2) + " (PV units)";
+            // Displaying raw area value in P*h units
+            document.getElementById('p3_work').innerText = Math.abs(work).toFixed(2) + " (Arbitrary Units)";
 
             // Close the loop for the chart
             const chartData = [...data, data[0]]; 
@@ -718,7 +715,7 @@
                     backgroundColor: 'rgba(46, 125, 50, 0.2)',
                     fill: true
                 }
-            ], V, 'Volume', 'Pressure');
+            ], V, 'Height (mm)', 'Pressure (mmHg)');
         }
 
         /* --- DATA PERSISTENCE --- */
